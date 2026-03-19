@@ -1,21 +1,57 @@
 # Tool-Augmented Chatbot
 
-This repository contains a full-stack learning project that connects a chatbot to a SQL Server database designed in SSMS (SQL Server Management Studio) .
+A full-stack learning project that demonstrates **LLM tool/function-calling** by connecting a chatbot to a real SQL Server database.
 
-The goal is to explore how function/tool-calling can let an AI assistant fetch real database data safely through backend functions instead of guessing.
+Instead of hallucinating answers, the AI assistant queries actual database tables through controlled backend functions, then summarises the results in natural language.
+
+## What It Does
+
+- **Answers natural-language questions** about employees, departments, projects, and dependents stored in a SQL Server database (`CompanyDB`).
+- **Uses LLM tool-calling** so the model decides when and which database function to invoke rather than generating data from thin air.
+- **Maintains conversation context** across multiple turns (last 5 messages kept in SQLite).
+- **Renders rich responses** — the React UI supports Markdown tables and lists in assistant replies.
+
+## Architecture
+
+```
+User (React UI)
+      │  POST /chat
+      ▼
+FastAPI Backend
+      │  calls model with tool schemas
+      ▼
+LLM (OpenAI-compatible — configured via NVIDIA_OPENAI_* in .env)
+      │  returns tool_call
+      ▼
+Tool Handler (agent.py)
+      │  executes SQL
+      ▼
+SQL Server (CompanyDB)
+      │  returns rows
+      ▼
+LLM (final answer generation)
+      │  natural-language response
+      ▼
+User (React UI)
+```
+
+## Available Tools
+
+The chatbot can call six predefined database functions:
+
+| Tool | Description |
+| --- | --- |
+| `list_departments` | Return all departments |
+| `list_projects` | Return all projects |
+| `list_employees` | Return all employees |
+| `get_employees_by_project` | Filter employees by project name |
+| `get_project_lead` | Look up the lead of a given project |
+| `get_dependents_by_employee` | Get dependents for an employee SSN |
 
 ## Repository Structure
 
 - `backend/`: FastAPI API, SQL Server integration, chatbot orchestration, and SQL queries
-- `frontend/`: Simple react chat interface for interacting with the backend
-
-## How It Works (High Level)
-
-1. The user types a question in the React UI.
-2. The frontend sends it to the backend `/chat` endpoint.
-3. The backend model decides whether to call a database tool function.
-4. Tool functions execute SQL queries against `CompanyDB`.
-5. The backend returns a clean answer to the frontend.
+- `frontend/`: Simple React chat interface for interacting with the backend
 
 ## Quick Start
 
