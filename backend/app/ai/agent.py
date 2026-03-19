@@ -12,6 +12,7 @@ from app.api.db_queries import (
 )
 from app.core.database import SessionLocal
 from app.core.config import settings
+from app.core.chat_history import get_recent_messages, save_message
 
 client = OpenAI(
     api_key=settings.NVIDIA_OPENAI_API_KEY,
@@ -47,16 +48,20 @@ def handle_tool_call(name, arguments):
     finally:
         db.close()
 
-def chat_with_ai(user_query: str):
+def chat_with_ai(user_query: str, conversation_id: str = "default"):
     if not settings.NVIDIA_OPENAI_API_KEY:
         return "Missing NVIDIA_OPENAI_API_KEY in .env"
 
+    recent_context = get_recent_messages(conversation_id=conversation_id, limit=5)
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        *recent_context,
+        {"role": "user", "content": user_query},
+    ]
+
     response = client.chat.completions.create(
         model=settings.NVIDIA_OPENAI_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_query}
-        ],
+        messages=messages,
         tools=tools,
         tool_choice="auto"
     )
@@ -70,14 +75,18 @@ def chat_with_ai(user_query: str):
 
         second_response = client.chat.completions.create(
             model=settings.NVIDIA_OPENAI_MODEL,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_query},
+            messages=messages + [
                 message,
                 {"role": "tool", "tool_call_id": tool_call.id, "content": str(result)}
             ]
         )
 
-        return second_response.choices[0].message.content
+        final_content = second_response.choices[0].message.content or "I could not generate a response."
+        save_message(conversation_id, "user", user_query)
+        save_message(conversation_id, "assistant", final_content)
+        return final_content
 
-    return message.content
+    final_content = message.content or "I could not generate a response."
+    save_message(conversation_id, "user", user_query)
+    save_message(conversation_id, "assistant", final_content)
+    return final_content

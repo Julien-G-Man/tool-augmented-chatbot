@@ -24,6 +24,22 @@ The goal is to explore how function/tool-calling can let an AI assistant fetch r
 2. Frontend setup and run instructions:
 	See `frontend/README.md`
 
+## Demo Script
+
+Use these prompts during a live demo to quickly show end-to-end functionality.
+
+| Prompt | Expected Output |
+| --- | --- |
+| "List all departments." | A structured list of departments with department number, name, and manager info when available. |
+| "Who is the lead of the ProductX project?" | A direct answer with project name, department, and lead name (or a clear no-result message if project is missing). |
+| "Show employees working on ProductX with hours." | A clean table/list showing employee names and their assigned hours for that project. |
+
+Demo tips:
+
+- Run `GET /db/health` before starting the chat demo to confirm DB connectivity.
+- Ask one broad question first (list), then one targeted question (lead), then one join-style question (employees + hours).
+- If no rows are returned, the assistant should say so clearly and suggest a nearby valid query.
+
 ## Tech Stack
 
 - Backend: FastAPI, SQLAlchemy, pyodbc, OpenAI-compatible SDK

@@ -38,6 +38,9 @@ htmlcov/
 # Logs
 *.log
 
+# Local SQLite files
+*.sqlite3
+
 # IDE and OS files
 .vscode/
 .idea/
