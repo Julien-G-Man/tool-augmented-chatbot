@@ -18,16 +18,17 @@ User (React UI)
       │  POST /chat
       ▼
 FastAPI Backend
-      │  calls model with tool schemas
+      │  calls model with tool schemas (DB + RAG)
       ▼
 LLM (OpenAI-compatible — configured via NVIDIA_OPENAI_* in .env)
       │  returns tool_call
       ▼
 Tool Handler (agent.py)
-      │  executes SQL
+      │  executes SQL query or document retrieval
       ▼
-SQL Server (CompanyDB)
-      │  returns rows
+Data Sources
+  ├─ SQL Server (CompanyDB) -> returns rows
+  └─ RAG Store (indexed PDF chunks) -> returns relevant context
       ▼
 LLM (final answer generation)
       │  natural-language response
@@ -37,7 +38,7 @@ User (React UI)
 
 ## Available Tools
 
-The chatbot can call six predefined database functions:
+The chatbot can call database and RAG tools:
 
 | Tool | Description |
 | --- | --- |
@@ -47,18 +48,33 @@ The chatbot can call six predefined database functions:
 | `get_employees_by_project` | Filter employees by project name |
 | `get_project_lead` | Look up the lead of a given project |
 | `get_dependents_by_employee` | Get dependents for an employee SSN |
+| `search_company_documents` | Search indexed company PDFs/documents via RAG |
+| `list_indexed_documents` | List indexed document sources and chunk counts |
+
+## RAG Update
+
+- PDFs and text documents can be indexed from `agent-service/data/documents/`.
+- Indexed chunks are persisted in `agent-service/data/rag_store.json`.
+- The assistant can now retrieve document context before answering.
+- RAG docs are in `agent-service/docs/`:
+      - `agent-service/docs/RAG_QUICKSTART.md`
+      - `agent-service/docs/RAG.md`
 
 ## Repository Structure
 
-- `backend/`: FastAPI API, SQL Server integration, chatbot orchestration, and SQL queries
-- `frontend/`: Simple React chat interface for interacting with the backend
+- `agent-service/`: FastAPI API, SQL Server integration, chatbot orchestration, RAG indexing/retrieval, and SQL queries
+- `web-client/`: React chat interface for interacting with the agent-service
+
+Note: Folder positions are unchanged. The names `agent-service` and `web-client` are naming conventions for role clarity.
 
 ## Quick Start
 
-1. Backend setup and run instructions:
-	See `backend/README.md`
-2. Frontend setup and run instructions:
-	See `frontend/README.md`
+1. Agent service setup and run instructions:
+	See `agent-service/README.md`
+2. Web client setup and run instructions:
+	See `web-client/README.md`
+3. RAG setup and indexing instructions:
+      See `agent-service/docs/RAG_QUICKSTART.md`
 
 ## Demo Script
 
@@ -78,11 +94,11 @@ Demo tips:
 
 ## Tech Stack
 
-- Backend: FastAPI, SQLAlchemy, pyodbc, OpenAI-compatible SDK
+- Agent Service: FastAPI, SQLAlchemy, pyodbc, OpenAI-compatible SDK, pypdf (RAG parsing)
 - Database: Local Microsoft SQL Server (SSMS + raw SQL schema)
-- Frontend: React + Vite
+- Web Client: React + Vite
 
 ## Notes
 
 - This is a coursework/learning project.
-- Configuration is environment-based (`.env`) and centralized in backend config.
+- Configuration is environment-based (`.env`) and centralized in agent-service config.

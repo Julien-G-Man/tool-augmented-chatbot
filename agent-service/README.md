@@ -1,23 +1,28 @@
-# Tool-Augmented Chatbot (Backend)
+# Tool-Augmented Chatbot (Agent Service)
 
-This backend exposes API endpoints and chatbot tool functions to query a SQL Server database (`CompanyDB`) designed in SSMS.
+This agent service exposes API endpoints and chatbot tool functions to query a SQL Server database (`CompanyDB`) designed in SSMS.
 
 It is built as a learning project to connect an LLM assistant to real relational data through controlled function calls.
+
+**NEW**: Now with **RAG (Retrieval-Augmented Generation)** - search and retrieve company documents!
 
 ## What It Does
 
 - Exposes a FastAPI backend.
 - Connects to a SQL Server database (`CompanyDB`) using SQLAlchemy + ODBC.
 - Lets a chatbot call predefined tools/functions to query real CompanyDB tables.
+- **Searches company PDF documents** using RAG - embeddings + vector search.
 - Persists chat history in local SQLite and reuses the last 5 messages as context.
-- Returns natural-language answers based on tool results.
+- Returns natural-language answers based on tool results and retrieved documents.
 
 ## Backend Flow
 
 1. `POST /chat` receives a user query (and optional conversation ID).
 2. `app/ai/agent.py` sends the query to the model.
-3. The model can call declared tools from `app/ai/tools.py`.
-4. Tool handlers execute SQL in `app/api/db_queries.py`.
+3. The model can call declared tools from `app/ai/tools.py`:
+   - **Database tools**: Query your SQL database
+   - **RAG tools**: Search company documents
+4. Tool handlers execute queries or retrieve documents.
 5. The final response is stored in SQLite chat history and returned to the frontend.
 
 ## Database Coverage
@@ -29,6 +34,20 @@ The backend now matches the schema in `app/sql/CompanyDB.sql` and queries these 
 - `Project`
 - `Works_on`
 - `Dependent`
+
+## RAG (Document Search) Coverage
+
+The backend now includes RAG capabilities:
+
+- Search company PDFs and documents
+- Semantic search using embeddings
+- Persistent document indexing
+
+**Quick Start**: See [docs/RAG_QUICKSTART.md](./docs/RAG_QUICKSTART.md)
+
+**Full Documentation**: See [docs/RAG.md](./docs/RAG.md)
+
+**Implementation Details**: See [docs/IMPLEMENTATION_SUMMARY.md](./docs/IMPLEMENTATION_SUMMARY.md)
 
 ## Project Layout (Backend)
 

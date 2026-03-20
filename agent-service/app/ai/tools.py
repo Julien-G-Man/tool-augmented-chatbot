@@ -1,4 +1,5 @@
-tools = [
+# Database Query Tools
+database_tools = [
     {
         "type": "function",
         "function": {
@@ -72,3 +73,44 @@ tools = [
         }
     }
 ]
+
+# RAG Tools - for searching company documents
+rag_tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_company_documents",
+            "description": "Search company PDF documents and policies for relevant information. Use this when questions are about company documents, policies, procedures, or any information that might be in PDFs.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query or question to find relevant documents"
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "Number of results to return (default: 5)",
+                        "default": 5
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_indexed_documents",
+            "description": "List all documents that have been indexed in the RAG system",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    }
+]
+
+# Combine all tools
+tools = database_tools + rag_tools

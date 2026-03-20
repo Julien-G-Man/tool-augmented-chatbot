@@ -13,11 +13,29 @@ from app.api.db_queries import (
 from app.core.database import SessionLocal
 from app.core.config import settings
 from app.core.chat_history import get_recent_messages, save_message
+from app.ai.rag.builders import build_rag_system
 
 client = OpenAI(
     api_key=settings.NVIDIA_OPENAI_API_KEY,
     base_url=settings.NVIDIA_OPENAI_BASE_URL,
 )
+
+# Initialize RAG system once at startup
+_rag_retriever = None
+
+def get_rag_retriever():
+    """Get or initialize RAG retriever singleton."""
+    global _rag_retriever
+    if _rag_retriever is None and settings.RAG_ENABLED:
+        try:
+            _rag_retriever = build_rag_system(
+                embedding_provider=settings.RAG_EMBEDDING_PROVIDER,
+                vector_store=settings.RAG_VECTOR_STORE,
+                persistence_path=str(settings.RAG_STORE_PATH),
+            )
+        except Exception as e:
+            print(f"Warning: Could not initialize RAG system: {e}")
+    return _rag_retriever
 
 
 def parse_tool_arguments(raw_arguments):
@@ -33,6 +51,7 @@ def parse_tool_arguments(raw_arguments):
 def handle_tool_call(name, arguments):
     db = SessionLocal()
     try:
+        # Database tools
         if name == "list_departments":
             return list_departments(db)
         if name == "list_projects":
@@ -45,6 +64,29 @@ def handle_tool_call(name, arguments):
             return get_project_lead(db, **arguments)
         if name == "get_dependents_by_employee":
             return get_dependents_by_employee(db, **arguments)
+        
+        # RAG tools
+        if name == "search_company_documents":
+            rag = get_rag_retriever()
+            if rag is None:
+                return {"error": "RAG system not initialized"}
+            query = arguments.get("query", "")
+            top_k = arguments.get("top_k", settings.RAG_TOP_K)
+            
+            # Get context from RAG
+            context = rag.get_context_string(query, top_k=top_k)
+            return {"results": context}
+        
+        if name == "list_indexed_documents":
+            rag = get_rag_retriever()
+            if rag is None:
+                return {"error": "RAG system not initialized"}
+            docs = rag.list_documents()
+            return {"documents": docs}
+        
+        # Unknown tool
+        return {"error": f"Unknown tool: {name}"}
+    
     finally:
         db.close()
 

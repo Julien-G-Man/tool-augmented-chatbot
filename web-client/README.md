@@ -13,7 +13,7 @@ Simple React chat interface for the Tool-Augmented Chatbot backend.
 
 1. User submits a query in the input box.
 2. Frontend sends `POST /chat?query=...`.
-3. Backend returns `{ "response": "..." }`.
+3. Agent service returns `{ "response": "..." }`.
 4. UI renders assistant output with Markdown support when appropriate.
 
 ## Run
@@ -34,5 +34,5 @@ Simple React chat interface for the Tool-Augmented Chatbot backend.
 
 ## Notes
 
-- Keep backend running on `http://127.0.0.1:8000`.
-- Vite proxy forwards `/chat` and `/health` requests to backend port 8000.
+- Keep agent-service running on `http://127.0.0.1:8000`.
+- Vite proxy forwards `/chat` and `/health` requests to agent-service port 8000.
