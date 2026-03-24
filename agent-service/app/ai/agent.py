@@ -48,6 +48,18 @@ def parse_tool_arguments(raw_arguments):
             return {}
     return {}
 
+
+def _format_rag_context(results):
+    if not results:
+        return "No relevant documents found."
+
+    context_parts = ["Retrieved relevant documents:\n"]
+    for i, result in enumerate(results, 1):
+        source_info = f" (Source: {result['source']}, Score: {result['score']:.2f})"
+        context_parts.append(f"\n[Document {i}]{source_info}\n{result['content']}\n")
+    return "".join(context_parts)
+
+
 def handle_tool_call(name, arguments):
     db = SessionLocal()
     try:
@@ -64,29 +76,56 @@ def handle_tool_call(name, arguments):
             return get_project_lead(db, **arguments)
         if name == "get_dependents_by_employee":
             return get_dependents_by_employee(db, **arguments)
-        
+
         # RAG tools
         if name == "search_company_documents":
             rag = get_rag_retriever()
             if rag is None:
                 return {"error": "RAG system not initialized"}
+
             query = arguments.get("query", "")
             top_k = arguments.get("top_k", settings.RAG_TOP_K)
-            
-            # Get context from RAG
-            context = rag.get_context_string(query, top_k=top_k)
+
+            print("=" * 72)
+            print("[RAG] TOOL CALL: search_company_documents")
+            print("-" * 72)
+            print(f"[RAG] Query: {query}")
+            print(f"[RAG] top_k: {top_k}")
+            print("[RAG] Retrieval method: semantic vector similarity search")
+            print(f"[RAG] Embedding provider: {settings.RAG_EMBEDDING_PROVIDER}")
+            print(f"[RAG] Vector store: {settings.RAG_VECTOR_STORE}")
+
+            results = rag.search(query, top_k=top_k)
+            if not results:
+                print("[RAG] Retrieved chunks: 0")
+                print("=" * 72)
+                return {"results": "No relevant documents found."}
+
+            print(f"[RAG] Retrieved chunks: {len(results)}")
+            for idx, result in enumerate(results, 1):
+                metadata = result.get("metadata", {})
+                chunk_index = metadata.get("chunk_index", "unknown")
+                preview = result.get("content", "").replace("\n", " ")[:140]
+                print(
+                    f"[RAG] Chunk {idx}: source={result.get('source', 'unknown')}, "
+                    f"chunk_index={chunk_index}, score={result.get('score', 0):.3f}"
+                )
+                print(f"[RAG] Preview {idx}: {preview}...")
+            print("=" * 72)
+
+            context = _format_rag_context(results)
             return {"results": context}
-        
+
         if name == "list_indexed_documents":
             rag = get_rag_retriever()
             if rag is None:
                 return {"error": "RAG system not initialized"}
             docs = rag.list_documents()
             return {"documents": docs}
-        
+
         # Unknown tool
         return {"error": f"Unknown tool: {name}"}
-    
+
     finally:
         db.close()
 
@@ -110,25 +149,43 @@ def chat_with_ai(user_query: str, conversation_id: str = "default"):
 
     message = response.choices[0].message
 
-    if message.tool_calls:
-        tool_call = message.tool_calls[0]
-        arguments = parse_tool_arguments(tool_call.function.arguments)
-        result = handle_tool_call(tool_call.function.name, arguments)
+    # Handle iterative/multiple tool calls until we get a final text response.
+    max_tool_rounds = 6
+    rounds = 0
 
-        second_response = client.chat.completions.create(
+    while message.tool_calls and rounds < max_tool_rounds:
+        rounds += 1
+        print("=" * 72)
+        print(f"[AGENT] Tool round {rounds}/{max_tool_rounds}")
+        print(f"[AGENT] Tool calls in this round: {len(message.tool_calls)}")
+        messages.append(message.model_dump(exclude_none=True))
+
+        for tool_call in message.tool_calls:
+            arguments = parse_tool_arguments(tool_call.function.arguments)
+            print(f"[AGENT] Executing tool: {tool_call.function.name}")
+            print(f"[AGENT] Tool arguments: {arguments}")
+            result = handle_tool_call(tool_call.function.name, arguments)
+            print(f"[AGENT] Tool result keys: {list(result.keys()) if isinstance(result, dict) else 'non-dict result'}")
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(result, ensure_ascii=False),
+                }
+            )
+
+        follow_up = client.chat.completions.create(
             model=settings.NVIDIA_OPENAI_MODEL,
-            messages=messages + [
-                message,
-                {"role": "tool", "tool_call_id": tool_call.id, "content": str(result)}
-            ]
+            messages=messages,
+            tools=tools,
+            tool_choice="auto",
         )
+        message = follow_up.choices[0].message
 
-        final_content = second_response.choices[0].message.content or "I could not generate a response."
-        save_message(conversation_id, "user", user_query)
-        save_message(conversation_id, "assistant", final_content)
-        return final_content
+    final_content = message.content
+    if not final_content:
+        final_content = "I couldn't produce a final response text. Please try again with a more specific question."
 
-    final_content = message.content or "I could not generate a response."
     save_message(conversation_id, "user", user_query)
     save_message(conversation_id, "assistant", final_content)
     return final_content

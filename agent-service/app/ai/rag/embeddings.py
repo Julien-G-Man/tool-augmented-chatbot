@@ -8,9 +8,11 @@ without changing downstream code.
 Learning Goal: Abstract interfaces let you change implementations easily!
 """
 
+import os
 from abc import ABC, abstractmethod
 from typing import List
-import os
+from openai import OpenAI
+from app.core.config import settings
 
 
 class EmbeddingProvider(ABC):
@@ -64,25 +66,17 @@ class OpenAIEmbeddings(EmbeddingProvider):
         """
         self.model = model
         self.dimension = 1536 if model == "text-embedding-3-small" else 3072
-        
-        # Placeholder for now - in real usage would initialize client
-        self.client = None
+        api_key = settings.OPENAI_API_KEY
+        if not api_key:
+            raise ValueError("Missing OPENAI_API_KEY for OpenAI embeddings")
+        self.client = OpenAI(api_key=api_key)
     
     def embed_text(self, text: str) -> List[float]:
         """
         Embed text using OpenAI API.
-        
-        In production, this would call the OpenAI API.
-        For now, returns a dummy embedding for demonstration.
         """
-        # TODO: Implement actual OpenAI API call
-        # from openai import OpenAI
-        # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        # response = client.embeddings.create(input=text, model=self.model)
-        # return response.data[0].embedding
-        
-        # Dummy implementation
-        return [0.0] * self.dimension
+        response = self.client.embeddings.create(input=text, model=self.model)
+        return response.data[0].embedding
     
     def get_embedding_dimension(self) -> int:
         return self.dimension

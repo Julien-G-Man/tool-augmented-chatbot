@@ -43,7 +43,6 @@ def index_documents(directory: str) -> None:
         print(f"❌ Directory not found: {directory}")
         return
     
-    # Initialize RAG system
     print("🔧 Initializing RAG system...")
     rag = build_rag_system(
         embedding_provider=settings.RAG_EMBEDDING_PROVIDER,
@@ -51,7 +50,6 @@ def index_documents(directory: str) -> None:
         persistence_path=str(settings.RAG_STORE_PATH),
     )
     
-    # Process documents
     print("📄 Processing documents...")
     processor = DocumentProcessor(
         chunk_size=settings.RAG_CHUNK_SIZE,

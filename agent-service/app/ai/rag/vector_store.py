@@ -143,7 +143,6 @@ class InMemoryVectorStore(VectorStore):
         """
         import math
         
-        # Dot product
         dot_product = sum(a * b for a, b in zip(vec1, vec2))
         
         # Magnitudes

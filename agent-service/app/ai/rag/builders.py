@@ -54,10 +54,8 @@ def build_rag_system(
         )
     """
     
-    # Build embedding provider
     embedding = _build_embedding_provider(embedding_provider, **kwargs)
     
-    # Build vector store
     vector_store_obj = _build_vector_store(vector_store, **kwargs)
     
     # Combine into RAG system
@@ -89,7 +87,7 @@ def _build_embedding_provider(
         dimension = kwargs.get("dimension", 384)
         return MockEmbeddings(dimension=dimension)
     
-    # Add more providers here as needed!
+    # We'll add more providers here as needed!
     # elif provider_type == "ollama":
     #     return OllamaEmbeddings(**kwargs)
     # elif provider_type == "huggingface":
@@ -118,7 +116,7 @@ def _build_vector_store(
         persistence_path = kwargs.get("persistence_path")
         return InMemoryVectorStore(persistence_path=persistence_path)
     
-    # Add more stores here as needed!
+    # We'll add more stores here as needed!
     # elif store_type == "pinecone":
     #     api_key = kwargs.get("pinecone_api_key")
     #     index = kwargs.get("pinecone_index")

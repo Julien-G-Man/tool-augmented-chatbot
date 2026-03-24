@@ -146,7 +146,7 @@ export default function App() {
       <section className="card">
         <header className="header">
           <div className="titleRow">
-            <h1>Company DB Chatbot</h1>
+            <h1>Internal Chatbot</h1>
             <span className={`statusTag ${loading ? "busy" : "idle"}`}>
               {loading ? "Thinking" : "Ready"}
             </span>
@@ -180,7 +180,6 @@ export default function App() {
         <div className="metaRow">
           <span>{messages.length - 1} messages</span>
           <div className="metaActions">
-            <span>Backend: localhost:8000</span>
             <button
               type="button"
               className="ghostButton"
@@ -207,7 +206,6 @@ export default function App() {
 
         {error ? <p className="error">{error}</p> : null}
 
-        <p className="hint">Try: "List all departments" or "Who leads ProductX?"</p>
       </section>
     </main>
   );
