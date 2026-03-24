@@ -2,7 +2,7 @@
 
 ## What Was Implemented
 
-This document summarizes the RAG system implementation and how to learn from it.
+Summary of the RAG system and the approach taken.
 
 ### Files Created
 
@@ -187,7 +187,7 @@ python -m app.ai.rag.management index ./data/documents/
 # Test search
 python -m app.ai.rag.management search "vacation policy"
 
-# Should return your test document!
+# Should return the test document!
 ```
 
 ### Common Mistakes to Avoid

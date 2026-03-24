@@ -2,9 +2,7 @@
 
 ## Overview
 
-This document explains the RAG system implemented in your chatbot. RAG allows the AI to search through your company's PDF documents and use that information to answer questions more accurately.
-
-**Learning Goal**: Understand how RAG works and how each component fits together.
+This document explains the RAG system implemented in the chatbot. RAG allows the AI to search through the company's PDF documents and use that information to answer questions more accurately.
 
 ---
 
@@ -24,11 +22,11 @@ This document explains the RAG system implemented in your chatbot. RAG allows th
 
 ### The Problem Without RAG
 
-Without RAG, the LLM only has general knowledge from its training data. It can't answer specific questions about your company's documents, policies, or internal data.
+Without RAG, the LLM only has general knowledge from its training data. It can't answer specific questions about the company's documents, policies, or internal data.
 
 ```
 User: "What is our parental leave policy?"
-LLM: "I don't have specific information about your company's policies."
+LLM: "I don't have specific information about the company's policies."
 ```
 
 ### The Solution: RAG
@@ -67,7 +65,7 @@ LLM: "According to the policy document, parental leave is..."
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Your Chatbot (Agent)                      │
+│                    The Chatbot (Agent)                        │
 │                                                              │
 │  When user asks a question:                                 │
 │  1. Check if it needs document search                        │
@@ -102,7 +100,7 @@ LLM: "According to the policy document, parental leave is..."
     └────────────────────────────────────────────┘
               ↑
     ┌─────────────────────────┐
-    │  Your PDF Files         │
+    │  The PDF Files          │
     │                         │
     │  data/documents/*.pdf   │
     └─────────────────────────┘
@@ -120,7 +118,7 @@ The beauty of this architecture: **Each component is replaceable**.
 
 This means you can:
 - **Start simple** (mock embeddings, in-memory store)
-- **Scale up** (OpenAI embeddings, Pinecone) without changing code
+- **Scale up** (OpenAI embeddings, Pinecone) without touching code
 - **Use open-source** (Ollama, Milvus) for full control
 
 ---
@@ -396,7 +394,7 @@ def _build_vector_store(store_type: str, **kwargs):
 
 **Path**: `app/ai/rag/retriever.py`
 
-The main interface your agent uses!
+The main interface the agent uses!
 
 #### Main Methods
 
@@ -492,9 +490,9 @@ rag = build_rag_system(
 
 ## How to Use RAG {#usage}
 
-### Step 1: Prepare Your Documents
+### Step 1: Prepare the Documents
 
-Create a directory with your company PDFs:
+Create a directory with the company PDFs:
 
 ```
 agent-service/
@@ -834,7 +832,7 @@ python -m app.ai.rag.management search "your query"
 
 ### Long Term
 1. 🤖 Use open-source embeddings (Ollama, HuggingFace)
-2. 🏠 Host your own vector store (Milvus, Weaviate)
+2. 🏠 Host on an open-source vector store (Milvus, Weaviate)
 3. 📈 Add advanced features (reranking, filters, hybrid search)
 
 ---

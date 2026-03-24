@@ -1,10 +1,24 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from app.core.deps import get_db
 from app.api import db_queries
+from app.core.deps import get_db
+from app.ai.agent import chat_with_ai
+from app.core.chat_history import clear_conversation
+
 
 router = APIRouter()
+
+@router.post("/chat")
+def chat(query: str, conversation_id: str = "default"):
+    response = chat_with_ai(query, conversation_id=conversation_id)
+    return {"response": response}
+
+
+@router.post("/chat/clear-context")
+def clear_chat_context(conversation_id: str = "default"):
+    deleted_count = clear_conversation(conversation_id)
+    return {"status": "cleared", "conversation_id": conversation_id, "deleted": deleted_count}
 
 
 @router.get("/departments")

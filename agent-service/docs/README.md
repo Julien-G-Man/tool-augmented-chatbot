@@ -1,6 +1,6 @@
 # Agent Service Documentation
 
-This folder contains comprehensive documentation for the agent service system.
+Documentation for the agent service system.
 
 ## Quick Navigation
 
@@ -13,7 +13,7 @@ This folder contains comprehensive documentation for the agent service system.
 
 ## What's Here
 
-This agent service implements:
+The agent service includes:
 
 1. **LLM Agent** with tool-calling capabilities
    - Connects to SQL Server database

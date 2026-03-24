@@ -1,6 +1,6 @@
 # RAG Quick Start Guide
 
-Get your RAG system running in 5 minutes!
+Get the RAG system running in 5 minutes!
 
 ## 1. Create Document Directory
 
@@ -9,9 +9,9 @@ Get your RAG system running in 5 minutes!
 mkdir -p data/documents
 ```
 
-## 2. Add Your PDFs
+## 2. Add PDFs
 
-Copy your company PDFs/text files to `agent-service/data/documents/`:
+Copy the company PDFs/text files to `agent-service/data/documents/`:
 
 ```
 agent-service/
@@ -59,7 +59,7 @@ Content: The company was founded in 2010...
 
 ## 5. Use in Chatbot
 
-Now when users ask questions, the agent will automatically search your documents!
+Now when users ask questions, the agent will automatically search the documents!
 
 ```
 User: "What is our vacation policy?"
@@ -85,7 +85,7 @@ python -m app.ai.rag.management clear
 
 ## If Results Look Like Gibberish
 
-If search output contains PDF internals like `BT`, `ET`, or long hex-like strings, your store likely has chunks indexed with an older parser.
+If search output contains PDF internals like `BT`, `ET`, or long hex-like strings, the store likely has chunks indexed with an older parser.
 
 Run a clean reindex:
 
