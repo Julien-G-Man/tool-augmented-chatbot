@@ -20,6 +20,17 @@ client = OpenAI(
     base_url=settings.NVIDIA_OPENAI_BASE_URL,
 )
 
+DATABASE_TOOLS = {
+    "list_departments": list_departments,
+    "list_projects": list_projects,
+    "list_employees": list_employees,
+    "get_employees_by_project": get_employees_by_project,
+    "get_project_lead": get_project_lead,
+    "get_dependents_by_employee": get_dependents_by_employee
+}
+
+RAG_TOOLS = {}
+
 # Initialize RAG system once at startup
 _rag_retriever = None
 
@@ -62,15 +73,6 @@ def _format_rag_context(results):
 
 def handle_tool_call(name, arguments):
     db = SessionLocal()
-    
-    DATABASE_TOOLS = {
-        "list_departments": list_departments,
-        "list_projects": list_projects,
-        "list_employees": list_employees,
-        "get_employees_by_project": get_employees_by_project,
-        "get_project_lead": get_project_lead,
-        "get_dependents_by_employee": get_dependents_by_employee
-    }
     
     try:
         # Database tools
