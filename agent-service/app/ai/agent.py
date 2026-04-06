@@ -62,20 +62,25 @@ def _format_rag_context(results):
 
 def handle_tool_call(name, arguments):
     db = SessionLocal()
+    
+    DATABASE_TOOLS = {
+        "list_departments": list_departments,
+        "list_projects": list_projects,
+        "list_employees": list_employees,
+        "get_employees_by_project": get_employees_by_project,
+        "get_project_lead": get_project_lead,
+        "get_dependents_by_employee": get_dependents_by_employee
+    }
+    
     try:
         # Database tools
-        if name == "list_departments":
-            return list_departments(db)
-        if name == "list_projects":
-            return list_projects(db)
-        if name == "list_employees":
-            return list_employees(db)
-        if name == "get_employees_by_project":
-            return get_employees_by_project(db, **arguments)
-        if name == "get_project_lead":
-            return get_project_lead(db, **arguments)
-        if name == "get_dependents_by_employee":
-            return get_dependents_by_employee(db, **arguments)
+        if name in DATABASE_TOOLS:
+            function_to_call =  DATABASE_TOOLS.get(name)
+            if name in ["list_departments", "list_projects", "list_employees"]:
+                return function_to_call(db)
+            else:
+                return function_to_call(db, **arguments)
+        
 
         # RAG tools
         if name == "search_company_documents":
